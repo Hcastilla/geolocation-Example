@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es-ES">
+    <head>
+        <title></title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.1/dist/leaflet.css" />
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+        <script src="https://unpkg.com/leaflet@1.0.1/dist/leaflet.js"></script>
+
+        <style>
+            #mapid{
+                width: 100%;
+                height: 80vh;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="mapid">
+
+        </div>
+        <div id="direccion"></div>
+
+        <script>
+            var myMap;
+
+            $(function(){
+                if("geolocation" in navigator){
+                    navigator.geolocation.getCurrentPosition(function(position){
+                        console.log(position);
+                        var pos = {};
+                        pos.lat = position.coords.latitude;
+                        pos.lon = position.coords.longitude;
+                        console.log(pos);
+                        dibujarMmapa(pos);
+                        obtenerDireccion(pos);
+                    });
+                }else{
+                    alert('no soportado');
+                }
+            });
+
+           
+            var dibujarMmapa =  function(pos){
+                myMap = L.map('mapid').setView([pos.lat, pos.lon], 16);
+
+                L.tileLayer('http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
+                    subdomains: 'abcd',
+                    maxZoom: 18,
+                }).addTo(myMap);
+                
+                var marker = L.marker([pos.lat, pos.lon]).addTo(myMap);
+
+            }
+
+            var obtenerDireccion = function(pos){
+                $.ajax({
+                    method:'GET',
+                    url:"https://www.geocode.farm/v3/json/reverse/?lat="+pos.lat+"&lon="+pos.lon,
+                    success:function(data){
+                        var dir = data.geocoding_results.RESULTS[0].formatted_address;
+                        var msg = "<h1>"+dir+"</h1>";
+                        $('#direccion').append(msg);
+                    }
+                });
+            }
+            
+        </script>
+    </body>
+</html>
